@@ -86,10 +86,12 @@ void CLab3D::Start()
     //duration<double>
 
     std::list <std::chrono::nanoseconds> TimeList;
-    std::list<std::chrono::nanoseconds>::iterator itHalf = TimeList.begin();
-    std::list<std::chrono::nanoseconds>::iterator itSecond;
+    std::list<std::chrono::nanoseconds>::iterator itSecond, itFirst;
+    std::list<std::chrono::nanoseconds>::reverse_iterator itReverse;
+    //std::list<std::chrono::nanoseconds>::iterator itFirst;
 
-//    auto MedianTimeVal = 0;
+    std::chrono::nanoseconds medianValue;
+    double maxSizelist = 300.0;
 
     while(1)
     {
@@ -223,75 +225,68 @@ void CLab3D::Start()
         auto endTime = std::chrono::high_resolution_clock::now();
 
         auto diffTime = endTime - startTime;
-        //std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime);
-        //itHalf = TimeList.begin();
 
-
-        if(!TimeList.empty())
-        {
-            //std::advance(itHalf, TimeList.size() / 2);
-            if(diffTime > *itHalf)
-            {
-               // for(itSecond = itHalf; diffTime < *itSecond; itSecond++){}
-                itSecond = itHalf;
-
-                while(diffTime < *itSecond)
-                    itSecond++;
-
-                TimeList.insert(itSecond, diffTime);
-            }
-
-            else if(diffTime < *itHalf)
-            {
-                //for(itSecond = itHalf; diffTime < *itSecond; itSecond--){}
-
-             //TimeList.insert(itSecond, diffTime);
-                itSecond = itHalf;
-
-                while(diffTime < *itSecond)
-                    itSecond--;
-
-                TimeList.insert(++itSecond, diffTime);
-            }
-            else
-            {
-                 TimeList.insert(itHalf, diffTime);
-            }
-            if(!(TimeList.size() % 2))
-                itHalf--;
-        /*    if(diffTime < *itHalf)
-            {
-            itSecond = itHalf;
-                while(diffTime <= *itSecond)
-                {
-                itSecond--;
-                }
-            TimeList.insert(++itSecond, diffTime);
-            }
-        */
-        }
-        else
+        if(TimeList.size() == 0)
         {
             TimeList.push_back(diffTime);
         }
+        else if (TimeList.size() >= maxSizelist)
+        {
+            itFirst = itSecond = TimeList.begin();
 
-        //TimeList.insert(itHalfList, diffTime);
+            advance(itSecond, maxSizelist / 3 );
+            //TODO IT is Right?
+            //TimeList.erase(TimeList.begin(), itSecond);
+            TimeList.erase(itFirst, itSecond);
 
-            //   for (itSecond = itHalfList; itSecond != itHalfList; itSecond++)
-             //  {
+            itSecond = TimeList.end();
+            advance(itSecond, -(maxSizelist / 3));
+            TimeList.erase(itSecond, TimeList.end());
+            /*itReverse = TimeList.rbegin();
+            advance(itReverse, maxSizelist / 3);
+            itSecond = TimeList.end();
+            TimeList.erase(itReverse, itSecond);*/
+        }
+        else
+        {
+            itSecond = --TimeList.end();
+            if(diffTime > *itSecond)
+            {
+                TimeList.push_back(diffTime);
+            }
+            else
+            {
+                for(itFirst = TimeList.begin(); itFirst != TimeList.end(); itFirst++)
+                {
+                    if(diffTime > *itFirst)
+                    {
+                        continue;
+                    }
+                    TimeList.insert(itFirst, diffTime);
+                    break;
+                }
+            }
+        }
 
-             //  }
+        itFirst = TimeList.begin();
 
+        if(!(TimeList.size() % 2))
+        {
+            advance(itFirst, (TimeList.size() / 2));
+            auto tempMed1 = *itFirst--;
+            auto tempMed2 = *itFirst;
+            medianValue = (tempMed1 + tempMed2) / 2;
+        }
+        if((TimeList.size() % 2))
+        {
+            advance(itFirst, (TimeList.size() / 2));
+            medianValue = *itFirst;
+        }
 
-
-     //   double MedianTimeVal;
-
-    //    double fps = 1000000000 / MedianTimeVal;
-        //std::time_t currentTimeT = std::chrono::duration<>::
-
-        diffTimeVec.push_back(diffTime);
-
-        int Count = diffTimeVec.size();
+        //sprintf(str, "%d:%d:%d", player.pos.x, player.pos.y, player.angle);
+       // char out[64] = {medianValue};
+       // sprintf(out, "%d", medianValue);
+       //std::cout << (long long )medianValue;
     }
 }
 
