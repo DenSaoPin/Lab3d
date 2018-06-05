@@ -1,6 +1,6 @@
 #include "ConsoleDrawer.h"
 #include <ncurses.h>
-
+#include <unistd.h>
 void CConsoleDrawer::DrawPixel(int x, int y, int color)
 {
 
@@ -24,7 +24,11 @@ CConsoleDrawer::~CConsoleDrawer()
 void CConsoleDrawer::FlushBuffer()
 {
     refresh();
-    clear();
+    //clear();
+    erase();
+
+    //usleep(100);
+    //clearok(stdscr, false);
 }
 
  int CConsoleDrawer::GetWidth()

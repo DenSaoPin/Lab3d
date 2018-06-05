@@ -71,26 +71,29 @@ void CLab3D::Start()
 {
     const double STEP_DIST = 2.0;
     SPlayer player;
-    player.pos.x = 0;
+    player.pos.x = 502;
     player.pos.y = 0;
     player.angle = 0;
 
-    int maxDistance = 1000;
-    //WINDOW *w;
+    double maxDistance = 1000.0;
     initscr();
 
-    //const char *pDevice = "/dev/input/mice";
-    //int fd = open(pDevice, O_RDONLY);
 
-    std::vector <std::chrono::nanoseconds> diffTimeVec;
-    //duration<double>
+/*
+    std::vector<std::chrono::nanoseconds> diffTimeVec;
 
-    std::list <std::chrono::nanoseconds> TimeList;
+    std::list<std::chrono::nanoseconds> TimeList;
     std::list<std::chrono::nanoseconds>::iterator itSecond, itFirst;
     std::list<std::chrono::nanoseconds>::reverse_iterator itReverse;
-    //std::list<std::chrono::nanoseconds>::iterator itFirst;
 
-    std::chrono::nanoseconds medianValue;
+    std::chrono::nanoseconds medianValue{};
+*/
+
+    std::list<std::chrono::duration<float>> TimeList;
+    std::list<std::chrono::duration<float>>::iterator itSecond, itFirst;
+
+    std::chrono::duration<float> medianValue;
+
     double maxSizelist = 300.0;
 
     while(1)
@@ -141,8 +144,8 @@ void CLab3D::Start()
         double deltaA = (double)_fov / 2.0;
 
         Geom::SPoint sP;
-        sP.x = cos(D2R(startA)) * ( maxDistance / cos(D2R(deltaA)) ) + player.pos.x;
-        sP.y = sin(D2R(startA)) * ( maxDistance / cos(D2R(deltaA)) ) + player.pos.y;
+        sP.x = cos(D2R(startA)) * ( 1.0 / cos(D2R(deltaA)) ) * maxDistance + player.pos.x;
+        sP.y = sin(D2R(startA)) * ( 1.0 / cos(D2R(deltaA)) ) * maxDistance + player.pos.y;
         Geom::SPoint zP;
         zP.x = cos(D2R(player.angle)) * ( maxDistance ) + player.pos.x;
         zP.y = sin(D2R(player.angle)) * ( maxDistance ) + player.pos.y;
@@ -159,7 +162,9 @@ void CLab3D::Start()
         {
             Geom::SSegment seg;
             seg.ptBegin = player.pos;
-            seg.ptEnd = sP - (dP * (float)i) ;
+
+            Geom::SPoint dPos = (dP * (float)i);
+            seg.ptEnd = sP - dPos ;
             /*
             double cA = startA + dA * i;
             double cARad = (cA * M_PI) / 180.0;
@@ -167,7 +172,7 @@ void CLab3D::Start()
             seg.ptEnd.y =  sin(cARad) * maxDistance + player.pos.y;
 
             */
-            double distToIntersect = maxDistance;
+            double distToIntersect = maxDistance / cos(D2R(deltaA));
             //printf(" map %d ", _map.size());
 
             for(int iMapSeg = 0; iMapSeg < _map.size(); iMapSeg++)
@@ -186,8 +191,11 @@ void CLab3D::Start()
             }
             double sD = seg.Abs();
             double zD = Geom::FindDistance( zP, player.pos );
-            double AngleCoeff = zD / sD;
-            DistVec.push_back(distToIntersect * AngleCoeff);
+            double dD = Geom::FindDistance( seg.ptEnd, player.pos );
+            double zdD = Geom::FindDistance( zP, seg.ptEnd );
+            double relAngle = (((dD * dD) + (zD * zD) - (zdD * zdD))/(2 * zD * dD));
+            double AngleCoeff = (zD / sD) * relAngle;
+            DistVec.push_back(distToIntersect * relAngle);
         }
 
         double DistCoeff = (double)_height * 1.5 / maxDistance;
@@ -216,15 +224,9 @@ void CLab3D::Start()
                  //printf("%d ", pointX);
             }
         }
-        char str[255];
-        sprintf(str, "%d:%d:%d", player.pos.x, player.pos.y, player.angle);
-        m_pDrawer->DrawText(3, 0, str);
-        m_pDrawer->FlushBuffer();
-        usleep(1000 * 10);
-
         auto endTime = std::chrono::high_resolution_clock::now();
 
-        auto diffTime = endTime - startTime;
+        std::chrono::duration<float> diffTime = endTime - startTime;
 
         if(TimeList.size() == 0)
         {
@@ -283,10 +285,18 @@ void CLab3D::Start()
             medianValue = *itFirst;
         }
 
-        //sprintf(str, "%d:%d:%d", player.pos.x, player.pos.y, player.angle);
-       // char out[64] = {medianValue};
-       // sprintf(out, "%d", medianValue);
-       //std::cout << (long long )medianValue;
+
+     //   std::chrono::seconds sec{1};
+      //  std::chrono::duration_cast<std::chrono::duration<float>>(sec);
+//        medianValue = sec / medianValue;
+
+        char str[255];
+        sprintf(str, "X:%d Y:%d A:%d FPS:%d", player.pos.x, player.pos.y, player.angle,  std::chrono::duration_cast<std::chrono::nanoseconds>(medianValue).count() );
+        m_pDrawer->DrawText(3, 0, str);
+        m_pDrawer->FlushBuffer();
+        usleep(1000 * 10);
+
+
     }
 }
 

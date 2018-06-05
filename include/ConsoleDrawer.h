@@ -6,6 +6,7 @@
 
 class CConsoleDrawer : public IDrawer
 {
+
 public:
     CConsoleDrawer();
     virtual ~CConsoleDrawer();
